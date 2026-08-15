@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano de Içamento — Memória de Cálculo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    --paper:#EFEAD8;
+    --paper-line:#D8D0B8;
+    --ink:#14201F;
+    --ink-soft:#33413F;
+    --steel:#1D3A47;
+    --yellow:#F2B705;
+    --yellow-deep:#8A5A00;
+    --danger:#8C2A14;
+    --ok:#1E5C39;
+    --card:#FFFFFF;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:20px 16px 0;}
+
+  header.hero{
+    border-bottom:3px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:22px;
+    position:relative;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--steel);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(28px,7vw,40px);
+    line-height:1.05;
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  h1 span{color:var(--yellow-deep);}
+  .hero-sub{color:var(--ink-soft);font-size:14.5px;max-width:60ch;}
+
+  .sheet{
+    background:var(--card);
+    border:1px solid var(--ink);
+    border-radius:var(--radius);
+    margin-bottom:18px;
+    box-shadow:3px 3px 0 rgba(27,42,46,0.12);
+  }
+  .sheet-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:10px 14px;
+    border-bottom:1px solid var(--ink);
+    background:#FBEEC8;
+  }
+  .sheet-head .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;font-weight:600;letter-spacing:.08em;
+    color:var(--steel);
+  }
+  .sheet-head h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:17px;margin:0;
+  }
+  .sheet-body{padding:16px 14px;}
+
+  label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;font-weight:500;}
+  input[type=number], select{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14.5px;
+    padding:8px 9px;
+    border:1px solid #9AA6A0;
+    border-radius:var(--radius);
+    background:#fff;
+    color:var(--ink);
+  }
+  input[type=number]:focus, select:focus{outline:2px solid var(--yellow-deep); outline-offset:1px;}
+  .grid{display:grid;gap:12px;}
+  .grid.g2{grid-template-columns:1fr 1fr;}
+  .grid.g3{grid-template-columns:1fr 1fr 1fr;}
+  @media (max-width:520px){.grid.g3{grid-template-columns:1fr 1fr;}}
+  .field-note{font-size:11.5px;color:var(--ink-soft);margin-top:3px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--paper-line);}
+  th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);}
+  td.num, th.num{font-family:'IBM Plex Mono',monospace;text-align:right;}
+  tr.warn td{background:rgba(178,58,30,0.08);}
+  tr.caution td{background:rgba(242,183,5,0.14);}
+
+  .pts-row{display:grid;grid-template-columns: 34px repeat(3,1fr) 34px;gap:6px;align-items:end;margin-bottom:8px;}
+  .pts-row label{font-size:10.5px;margin-bottom:2px;}
+  .pt-label{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;
+    background:var(--ink);color:var(--paper);
+    border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:8px;
+  }
+  button{
+    font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:13.5px;
+    border:1px solid var(--ink);border-radius:var(--radius);
+    padding:8px 14px;cursor:pointer;background:#fff;color:var(--ink);
+  }
+  button.primary{background:var(--yellow);border-color:var(--yellow-deep);}
+  button.ghost{background:transparent;}
+  button.rm{
+    width:26px;height:26px;padding:0;margin-bottom:8px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--danger);border-color:var(--danger);
+  }
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+
+  #diagram{width:100%;background:#fff;border:1px solid var(--ink);border-radius:var(--radius);}
+
+  .badge{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
+    padding:2px 8px;border-radius:999px;letter-spacing:.03em;
+  }
+  .badge.ok{background:rgba(46,107,69,0.14);color:var(--ok);}
+  .badge.bad{background:rgba(178,58,30,0.14);color:var(--danger);}
+  .badge.warn{background:rgba(242,183,5,0.22);color:var(--yellow-deep);}
+
+  .callout{
+    border-left:3px solid var(--ink);
+    padding:8px 12px;margin:10px 0;font-size:13px;background:rgba(43,76,92,0.06);
+  }
+  .callout.danger{border-color:var(--danger);background:rgba(178,58,30,0.08);}
+  .callout.ok{border-color:var(--ok);background:rgba(46,107,69,0.08);}
+
+  .steps{counter-reset:step;}
+  .step{
+    counter-increment:step;
+    position:relative;
+    padding:12px 12px 12px 46px;
+    border-bottom:1px dashed var(--paper-line);
+  }
+  .step:last-child{border-bottom:none;}
+  .step::before{
+    content:counter(step);
+    position:absolute;left:6px;top:12px;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+    width:28px;height:28px;border-radius:50%;
+    background:var(--steel);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .step h3{margin:0 0 6px;font-family:'Space Grotesk',sans-serif;font-size:15px;}
+  .step .formula{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;
+    background:#fff;border:1px solid var(--paper-line);
+    padding:8px 10px;border-radius:var(--radius);margin:6px 0;
+    white-space:pre-wrap;overflow-x:auto;
+  }
+  .step p{margin:6px 0;font-size:13.5px;color:var(--ink-soft);}
+
+  .refs{font-size:12px;color:var(--ink-soft);}
+  .refs li{margin-bottom:6px;}
+
+  footer.legal{
+    max-width:920px;margin:24px auto 0;padding:14px 16px;
+    font-size:11.5px;color:var(--ink-soft);border-top:1px solid var(--paper-line);
+  }
+
+  @media print{
+    body{background:#fff;}
+    .no-print{display:none !important;}
+    .sheet{box-shadow:none;break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow"><span>PLANO DE IÇAMENTO — MEMÓRIA DE CÁLCULO</span><span id="dateNow"></span></div>
+    <h1>Distribuição de carga<br><span>nas pernas de içamento</span></h1>
+    <p class="hero-sub">Insira a peça, o centro de gravidade e os pontos de içamento. O app calcula a tração em cada cabo/cinta a partir de equilíbrio estático, aplica o coeficiente dinâmico e o coeficiente de segurança conforme ABNT NBR 8400, e mostra o passo a passo.</p>
+  </header>
+
+  <!-- FOLHA 1 -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">FOLHA 01</span><h2>Dados da peça</h2></div>
+    <div class="sheet-body">
+      <div class="grid g2">
+        <div>
+          <label for="peso">Peso da peça (kgf)</label>
+          <input type="number" id="peso" value="4000" min="0" step="10">
+        </div>
+        <div></div>
+      </div>
+      <p class="field-note" style="margin-top:10px;">Coordenadas do centro de gravidade (CG), em metros, no mesmo sistema de referência dos pontos de içamento (Folha 02).</p>
+      <div class="grid g3">
+        <div><label>Xg</label><input type="number" id="xg" value="0" step="0.05"></div>
+        <div><label>Yg</label><input type="number" id="yg" value="0" step="0.05"></div>
+        <div><label>Zg (cota)</label><input type="number" id="zg" value="0.4" step="0.05"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOLHA 2 -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">FOLHA 02</span><h2>Pontos de içamento</h2></div>
+    <div class="sheet-body">
+      <div class="grid" style="grid-template-columns: 34px repeat(3,1fr) 34px; margin-bottom:2px;">
+        <div></div>
+        <label>X (m)</label><label>Y (m)</label><label>Z / cota (m)</label>
+        <div></div>
+      </div>
+      <div id="pointsList"></div>
+      <div class="btn-row">
+        <button class="ghost" id="addPoint" type="button">+ adicionar ponto</button>
+      </div>
+      <p class="field-note">Mínimo 2, máximo 8 pontos. Para 3 pontos a distribuição de carga é exata (estaticamente determinada). Para 4 ou mais pontos, o sistema é hiperestático e o app usa o método elástico de superposição (mesma lógica de grupos de parafusos/soldas excêntricos).</p>
+    </div>
+  </section>
+
+  <!-- FOLHA 3 -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">FOLHA 03</span><h2>Aparelho de içamento</h2></div>
+    <div class="sheet-body">
+      <div class="grid g2">
+        <div>
+          <label for="zh">Cota do gancho / moitão (Z, m)</label>
+          <input type="number" id="zh" value="4.5" step="0.1">
+          <p class="field-note">O gancho é posicionado em planta diretamente acima do CG (Xh=Xg, Yh=Yg), condição padrão para içamento nivelado.</p>
+        </div>
+        <div>
+          <label for="vz">Velocidade de içamento Vz (m/s)</label>
+          <input type="number" id="vz" value="0.2" step="0.01" min="0">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOLHA 4 -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">FOLHA 04</span><h2>Coeficientes de projeto</h2></div>
+    <div class="sheet-body">
+      <div class="grid g2">
+        <div>
+          <label for="psi">Coeficiente dinâmico ψ</label>
+          <input type="number" id="psi" value="1.20" step="0.01" min="1">
+          <p class="field-note">Sugestão automática por ψ = 1,10 × (1 + 0,6·Vz), limitado entre 1,05 e 1,60 — estimativa usual a partir da NBR 8400. Ajuste conforme a tabela de classificação do seu equipamento/mecanismo (NBR 8400-1:2019) se disponível.</p>
+        </div>
+        <div>
+          <label for="fs">Coeficiente de segurança de projeto (FS)</label>
+          <select id="fs">
+            <option value="5">5:1</option>
+            <option value="6" selected>6:1</option>
+            <option value="7">7:1</option>
+            <option value="8">8:1</option>
+          </select>
+          <p class="field-note">Faixa usual de 6 a 8 para cabos de içamento (projetistas, base NBR 8400); NR-11/NR-12 exigem que acessórios de içamento tenham capacidade nominal compatível com a carga e certificação do fabricante.</p>
+        </div>
+      </div>
+      <div class="grid g2" style="margin-top:12px;">
+        <div>
+          <label for="wll">Capacidade nominal (WLL) do cabo/cinta escolhido — opcional (kgf)</label>
+          <input type="number" id="wll" step="10" min="0" placeholder="ex: 3000">
+          <p class="field-note">Se informado, o app compara diretamente a tração dinâmica de cada perna com o WLL (o WLL do fabricante já incorpora o fator de segurança do acessório).</p>
+        </div>
+        <div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIAGRAMA -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">DIAGRAMA</span><h2>Vista em planta</h2></div>
+    <div class="sheet-body">
+      <svg id="diagram" viewBox="0 0 600 420"></svg>
+      <div class="btn-row" style="margin-top:10px;">
+        <span class="badge ok" style="opacity:.85;">● Ponto de içamento</span>
+        <span class="badge warn" style="opacity:.85;">✕ Centro de gravidade (CG)</span>
+        <span class="badge" style="background:rgba(43,76,92,.14);color:var(--steel);">△ Centróide dos pontos</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">RESULTADO</span><h2>Tração por perna</h2></div>
+    <div class="sheet-body" style="overflow-x:auto;">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Perna</th>
+            <th class="num">F vert. (kgf)</th>
+            <th class="num">Ângulo (°)</th>
+            <th class="num">Comp. cabo (m)</th>
+            <th class="num">T estática (kgf)</th>
+            <th class="num">T dinâmica (kgf)</th>
+            <th class="num">MBL exigida (kgf)</th>
+            <th>Situação</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+      <div id="warningsBlock"></div>
+    </div>
+  </section>
+
+  <!-- MEMÓRIA DE CÁLCULO -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">MEMÓRIA</span><h2>Passo a passo do cálculo</h2></div>
+    <div class="sheet-body">
+      <div class="steps" id="stepsBlock"></div>
+    </div>
+  </section>
+
+  <!-- REFERÊNCIAS -->
+  <section class="sheet">
+    <div class="sheet-head"><span class="tag">BASE TÉCNICA</span><h2>Referências</h2></div>
+    <div class="sheet-body">
+      <ul class="refs">
+        <li><strong>ABNT NBR 8400</strong> (partes 1 a 5, revisão 2019) — Equipamentos de elevação e movimentação de carga: classificação de cargas, coeficiente dinâmico (ψ) e coeficiente de segurança de cabos de aço.</li>
+        <li><strong>NR-11</strong> (Transporte, Movimentação, Armazenagem e Manuseio de Materiais) e <strong>NR-12</strong> (Segurança no Trabalho em Máquinas e Equipamentos) — Ministério do Trabalho e Emprego, requisitos de acessórios de içamento e capacidade certificada.</li>
+        <li><strong>Estática do corpo rígido</strong> (equilíbrio de forças e momentos) — para 2 e 3 pontos de içamento o problema é estaticamente determinado e resolvido de forma exata.</li>
+        <li><strong>Método elástico de superposição</strong> (analogia com grupos de fixadores/solda sob carregamento excêntrico — Hibbeler, "Resistência dos Materiais"; Shigley, "Projeto de Engenharia Mecânica") — usado para 4 ou mais pontos, sistema estaticamente indeterminado.</li>
+      </ul>
+      <div class="callout">Este app é uma ferramenta de apoio ao cálculo. Para içamentos críticos, cargas elevadas ou peças com geometria complexa, o plano de içamento deve ser revisado e assinado por engenheiro responsável, conforme NR-11/NR-12.</div>
+    </div>
+  </section>
+
+  <div class="btn-row no-print" style="margin:18px 0 30px;">
+    <button class="primary" id="printBtn" type="button">Baixar PDF</button>
+    <span id="pdfStatus" style="font-size:12.5px;color:var(--ink-soft);align-self:center;"></span>
+  </div>
+
+</div>
+
+<footer class="legal">Ferramenta de cálculo educativa. Não substitui a responsabilidade técnica de um engenheiro habilitado para a liberação de içamentos reais.</footer>
+
+<script>
+document.getElementById('dateNow').textContent = new Date().toLocaleDateString('pt-BR');
+
+const printBtn = document.getElementById('printBtn');
+const pdfStatus = document.getElementById('pdfStatus');
+
+printBtn.addEventListener('click', ()=>{
+  if(typeof html2pdf === 'undefined'){
+    // biblioteca não carregou (ex: sem internet) — recorre ao diálogo de impressão do navegador
+    window.print();
+    return;
+  }
+  printBtn.disabled = true;
+  printBtn.textContent = 'Gerando PDF...';
+  pdfStatus.textContent = '';
+
+  const opt = {
+    margin: [10,8,10,8],
+    filename: 'plano-de-icamento.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#EFEAD8',
+      onclone: (doc) => { doc.querySelectorAll('.no-print').forEach(el => el.style.display = 'none'); }
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['.sheet', '.step'] }
+  };
+
+  html2pdf().set(opt).from(document.querySelector('.wrap')).save()
+    .then(()=>{ pdfStatus.textContent = 'PDF baixado.'; })
+    .catch((err)=>{
+      console.error(err);
+      pdfStatus.textContent = 'Não foi possível gerar o PDF automaticamente — abrindo impressão.';
+      window.print();
+    })
+    .finally(()=>{ printBtn.disabled = false; printBtn.textContent = 'Baixar PDF'; });
+});
+
+const G = 9.80665;
+let points = [
+  {x:-1.2, y:-0.8, z:0.6},
+  {x: 1.2, y:-0.8, z:0.6},
+  {x: 1.2, y: 0.8, z:0.6},
+  {x:-1.2, y: 0.8, z:0.6},
+];
+
+const pointsList = document.getElementById('pointsList');
+
+function renderPointRows(){
+  pointsList.innerHTML = '';
+  points.forEach((p, i)=>{
+    const row = document.createElement('div');
+    row.className = 'pts-row';
+    row.innerHTML = `
+      <div class="pt-label">${i+1}</div>
+      <div><input type="number" step="0.05" value="${p.x}" data-i="${i}" data-k="x"></div>
+      <div><input type="number" step="0.05" value="${p.y}" data-i="${i}" data-k="y"></div>
+      <div><input type="number" step="0.05" value="${p.z}" data-i="${i}" data-k="z"></div>
+      <button class="rm" type="button" data-rm="${i}" title="remover">✕</button>
+    `;
+    pointsList.appendChild(row);
+  });
+  pointsList.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const i = +e.target.dataset.i, k = e.target.dataset.k;
+      points[i][k] = parseFloat(e.target.value) || 0;
+      recalc();
+    });
+  });
+  pointsList.querySelectorAll('[data-rm]').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      if(points.length <= 2){ alert('São necessários pelo menos 2 pontos de içamento.'); return; }
+      points.splice(+e.target.dataset.rm, 1);
+      renderPointRows();
+      recalc();
+    });
+  });
+}
+
+document.getElementById('addPoint').addEventListener('click', ()=>{
+  if(points.length >= 8){ alert('Máximo de 8 pontos de içamento.'); return; }
+  points.push({x:0, y:0, z:0.6});
+  renderPointRows();
+  recalc();
+});
+
+['peso','xg','yg','zg','zh','vz','psi','fs','wll'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    if(id==='vz') suggestPsi();
+    recalc();
+  });
+});
+
+function suggestPsi(){
+  const vz = parseFloat(document.getElementById('vz').value) || 0;
+  let psi = 1.10 * (1 + 0.6*vz);
+  psi = Math.max(1.05, Math.min(1.60, psi));
+  document.getElementById('psi').value = psi.toFixed(2);
+}
+
+function fmt(n, d=2){ return isFinite(n) ? n.toFixed(d).replace('.', ',') : '—'; }
+
+function solveLoads(pts, Xg, Yg, W){
+  const n = pts.length;
+  if(n === 2){
+    const [p1,p2] = pts;
+    const dx = p2.x-p1.x, dy = p2.y-p1.y;
+    const L = Math.hypot(dx,dy) || 1e-9;
+    const t = ((Xg-p1.x)*dx + (Yg-p1.y)*dy) / (L*L); // projeção do CG sobre a linha P1P2 (0..1)
+    const d1 = t*L, d2 = (1-t)*L;
+    const F1 = W * d2 / L, F2 = W * d1 / L;
+    // distância perpendicular do CG à linha (risco de tombamento)
+    const perp = Math.abs((Xg-p1.x)*dy - (Yg-p1.y)*dx) / L;
+    return {F:[F1,F2], method:'exato (alavanca 2 pontos)', perpOffset:perp, lineLength:L};
+  }
+  if(n === 3){
+    const [p1,p2,p3] = pts;
+    const x1=p1.x-Xg, y1=p1.y-Yg, x2=p2.x-Xg, y2=p2.y-Yg, x3=p3.x-Xg, y3=p3.y-Yg;
+    // sistema: F1+F2+F3=W ; x1F1+x2F2+x3F3=0 ; y1F1+y2F2+y3F3=0
+    const A = [[1,1,1],[x1,x2,x3],[y1,y2,y3]];
+    const b = [W,0,0];
+    const det3 = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+    const D = det3(A);
+    const F = [0,1,2].map(col=>{
+      const M = A.map(r=>r.slice());
+      for(let r=0;r<3;r++) M[r][col] = b[r];
+      return det3(M)/D;
+    });
+    return {F, method:'exato (sistema estaticamente determinado 3 pontos)'};
+  }
+  // n >= 4: método elástico de superposição
+  const Xbar = pts.reduce((s,p)=>s+p.x,0)/n;
+  const Ybar = pts.reduce((s,p)=>s+p.y,0)/n;
+  const Sxx = pts.reduce((s,p)=>s+(p.x-Xbar)**2,0) || 1e-9;
+  const Syy = pts.reduce((s,p)=>s+(p.y-Ybar)**2,0) || 1e-9;
+  const ex = Xg - Xbar, ey = Yg - Ybar;
+  const F = pts.map(p => W/n + W*ex*(p.x-Xbar)/Sxx + W*ey*(p.y-Ybar)/Syy);
+  return {F, method:'aproximado (método elástico / superposição, ' + n + ' pontos)', Xbar, Ybar, ex, ey, Sxx, Syy};
+}
+
+function drawDiagram(pts, Xg, Yg, res){
+  const svg = document.getElementById('diagram');
+  const W=600,H=420,pad=60;
+  const xs = pts.map(p=>p.x).concat([Xg]);
+  const ys = pts.map(p=>p.y).concat([Yg]);
+  let minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
+  if(maxX-minX < 0.5){minX-=0.5;maxX+=0.5;}
+  if(maxY-minY < 0.5){minY-=0.5;maxY+=0.5;}
+  const spanX = maxX-minX, spanY = maxY-minY;
+  const scale = Math.min((W-2*pad)/spanX, (H-2*pad)/spanY);
+  const cx = W/2, cy = H/2;
+  const midX = (minX+maxX)/2, midY=(minY+maxY)/2;
+  const px = x => cx + (x-midX)*scale;
+  const py = y => cy - (y-midY)*scale; // eixo Y para cima
+
+  let svgEls = '';
+  // linhas dos pontos até projeção do gancho (Xg,Yg)
+  pts.forEach((p,i)=>{
+    const isNeg = res.F[i] < 0;
+    svgEls += `<line x1="${px(p.x)}" y1="${py(p.y)}" x2="${px(Xg)}" y2="${py(Yg)}" stroke="${isNeg?'#B23A1E':'#2B4C5C'}" stroke-width="1.6" stroke-dasharray="${isNeg?'4 3':'0'}" />`;
+  });
+  // centróide dos pontos (se n>=3)
+  if(res.Xbar !== undefined){
+    svgEls += `<path d="M ${px(res.Xbar)} ${py(res.Ybar)-7} L ${px(res.Xbar)+7} ${py(res.Ybar)+6} L ${px(res.Xbar)-7} ${py(res.Ybar)+6} Z" fill="none" stroke="#2B4C5C" stroke-width="1.4"/>`;
+  }
+  // pontos
+  pts.forEach((p,i)=>{
+    svgEls += `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="9" fill="#F2B705" stroke="#1B2A2E" stroke-width="1.6"/>`;
+    svgEls += `<text x="${px(p.x)}" y="${py(p.y)+4}" font-size="10.5" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600">${i+1}</text>`;
+  });
+  // CG
+  svgEls += `<line x1="${px(Xg)-9}" y1="${py(Yg)-9}" x2="${px(Xg)+9}" y2="${py(Yg)+9}" stroke="#B23A1E" stroke-width="2.4"/>`;
+  svgEls += `<line x1="${px(Xg)-9}" y1="${py(Yg)+9}" x2="${px(Xg)+9}" y2="${py(Yg)-9}" stroke="#B23A1E" stroke-width="2.4"/>`;
+  svgEls += `<text x="${px(Xg)+13}" y="${py(Yg)-10}" font-size="11" font-family="IBM Plex Mono, monospace" fill="#B23A1E" font-weight="600">CG</text>`;
+
+  svg.innerHTML = svgEls;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+}
+
+function recalc(){
+  const W = parseFloat(document.getElementById('peso').value)||0;
+  const Xg = parseFloat(document.getElementById('xg').value)||0;
+  const Yg = parseFloat(document.getElementById('yg').value)||0;
+  const Zg = parseFloat(document.getElementById('zg').value)||0;
+  const Zh = parseFloat(document.getElementById('zh').value)||0;
+  const Vz = parseFloat(document.getElementById('vz').value)||0;
+  const psi = parseFloat(document.getElementById('psi').value)||1;
+  const FS = parseFloat(document.getElementById('fs').value)||6;
+  const wllInput = document.getElementById('wll').value;
+  const WLL = wllInput ? parseFloat(wllInput) : null;
+
+  const res = solveLoads(points, Xg, Yg, W);
+  drawDiagram(points, Xg, Yg, res);
+
+  const rows = points.map((p,i)=>{
+    const Fi = res.F[i];
+    const horiz = Math.hypot(p.x-Xg, p.y-Yg);
+    const h = Zh - p.z;
+    const L = Math.hypot(horiz, h);
+    const angle = h > 0 ? Math.atan2(horiz, h)*180/Math.PI : 90;
+    const Tstatic = (Fi>0 && h>0) ? Fi/Math.cos(angle*Math.PI/180) : NaN;
+    const Tdyn = Tstatic * psi;
+    const MBL = Tdyn * FS;
+    return {i, Fi, horiz, h, L, angle, Tstatic, Tdyn, MBL};
+  });
+
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  const warnings = [];
+
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    let status = '', cls='';
+    if(r.Fi < 0 || r.h <= 0){
+      status = '<span class="badge bad">cabo frouxo</span>';
+      cls='warn';
+      warnings.push(`Perna ${r.i+1}: força vertical calculada é nula/negativa ou a cota do gancho não está acima do ponto — este cabo não trabalhará tracionado nessa configuração. Revise a posição dos pontos, a altura do gancho ou considere um dispositivo rígido (viga espalhadora).`);
+    } else if(r.angle > 45){
+      status = '<span class="badge warn">ângulo > 45°</span>';
+      cls='caution';
+      warnings.push(`Perna ${r.i+1}: ângulo de ${fmt(r.angle,1)}° em relação à vertical. A prática de içamento recomenda manter os cabos/cintas até 45° (idealmente até 30°) da vertical, pois a tração cresce rapidamente acima disso.`);
+    } else if(WLL && r.Tdyn > WLL){
+      status = '<span class="badge bad">acima do WLL</span>';
+      cls='warn';
+      warnings.push(`Perna ${r.i+1}: tração dinâmica (${fmt(r.Tdyn,0)} kgf) excede o WLL informado (${fmt(WLL,0)} kgf). Escolha um cabo/cinta de maior capacidade.`);
+    } else {
+      status = '<span class="badge ok">ok</span>';
+    }
+    tr.className = cls;
+    tr.innerHTML = `
+      <td>${r.i+1}</td>
+      <td class="num">${fmt(r.Fi,0)}</td>
+      <td class="num">${fmt(r.angle,1)}</td>
+      <td class="num">${fmt(r.L,2)}</td>
+      <td class="num">${fmt(r.Tstatic,0)}</td>
+      <td class="num">${fmt(r.Tdyn,0)}</td>
+      <td class="num">${fmt(r.MBL,0)}</td>
+      <td>${status}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if(res.perpOffset !== undefined && res.perpOffset > 0.02*res.lineLength){
+    warnings.push(`Içamento com 2 pontos: o CG está a ${fmt(res.perpOffset,3)} m da linha que une os 2 pontos de içamento. Em içamentos de 2 pontos o CG deve estar sobre essa linha; um desvio como este indica risco de a peça bascular/girar ao ser levantada.`);
+  }
+
+  const wb = document.getElementById('warningsBlock');
+  wb.innerHTML = warnings.length
+    ? warnings.map(w=>`<div class="callout danger">⚠ ${w}</div>`).join('')
+    : `<div class="callout ok">Nenhuma inconsistência geométrica detectada nas verificações automáticas (cabos tracionados, ângulos ≤45°, WLL se informado).</div>`;
+
+  renderSteps(W,Xg,Yg,Zg,Zh,Vz,psi,FS,WLL,res,rows);
+}
+
+function renderSteps(W,Xg,Yg,Zg,Zh,Vz,psi,FS,WLL,res,rows){
+  const n = points.length;
+  const stepsBlock = document.getElementById('stepsBlock');
+  let html = '';
+
+  html += `<div class="step"><h3>Dados de entrada</h3>
+    <p>Peso da peça W = ${fmt(W,0)} kgf. CG em (${fmt(Xg)}, ${fmt(Yg)}, ${fmt(Zg)}) m. ${n} pontos de içamento. Cota do gancho Zh = ${fmt(Zh)} m. Velocidade de içamento Vz = ${fmt(Vz)} m/s.</p></div>`;
+
+  html += `<div class="step"><h3>Coeficiente dinâmico (ψ)</h3>
+    <div class="formula">ψ = 1,10 × (1 + 0,6 × Vz)  →  ψ = 1,10 × (1 + 0,6 × ${fmt(Vz)}) = ${fmt(psi)}</div>
+    <p>Majora as solicitações verticais devido ao içamento relativamente brusco da carga, conforme ABNT NBR 8400. O valor pode ser ajustado manualmente na Folha 04 conforme o grupo de classificação real do equipamento.</p></div>`;
+
+  if(n===2){
+    html += `<div class="step"><h3>Distribuição da carga entre 2 pontos</h3>
+      <p>Método: ${res.method}. Para 2 pontos, a carga se distribui por semelhança de alavanca ao longo da linha que une os pontos, proporcional à distância do CG projetado até cada extremidade.</p>
+      <div class="formula">F1 = W · d2 / L    F2 = W · d1 / L
+d1, d2 = distâncias do CG (projetado sobre a linha) a cada ponto; L = d1 + d2</div>
+      <p>Resultado: F1 = ${fmt(res.F[0],0)} kgf · F2 = ${fmt(res.F[1],0)} kgf. Desvio perpendicular do CG em relação à linha dos pontos: ${fmt(res.perpOffset,3)} m (idealmente próximo de zero).</p></div>`;
+  } else if(n===3){
+    html += `<div class="step"><h3>Distribuição da carga entre 3 pontos</h3>
+      <p>Método: ${res.method}. Com 3 pontos não alinhados o problema é estaticamente determinado — resolve-se o sistema de equilíbrio de forma exata, sem aproximações:</p>
+      <div class="formula">ΣF = W
+ΣF·(Xi − Xg) = 0
+ΣF·(Yi − Yg) = 0</div>
+      <p>Resultado: ${points.map((p,i)=>`F${i+1} = ${fmt(res.F[i],0)} kgf`).join(' · ')}.</p></div>`;
+  } else {
+    html += `<div class="step"><h3>Distribuição da carga entre ${n} pontos</h3>
+      <p>Método: ${res.method}. Com 4 ou mais pontos o sistema é hiperestático (mais incógnitas que equações de equilíbrio). Usa-se o método elástico de superposição, análogo ao cálculo de grupos de parafusos/soldas sob carregamento excêntrico: cada ponto recebe uma parcela igual (W/n) mais uma parcela proporcional à excentricidade do CG em relação ao centróide geométrico dos pontos.</p>
+      <div class="formula">X̄ = ${fmt(res.Xbar)} m,  Ȳ = ${fmt(res.Ybar)} m  (centróide dos pontos)
+ex = Xg − X̄ = ${fmt(res.ex)} m,  ey = Yg − Ȳ = ${fmt(res.ey)} m
+Fi = W/n + W·ex·(Xi−X̄)/Sxx + W·ey·(Yi−Ȳ)/Syy
+Sxx = ${fmt(res.Sxx,3)} m² ,  Syy = ${fmt(res.Syy,3)} m²</div>
+      <p>Resultado: ${points.map((p,i)=>`F${i+1} = ${fmt(res.F[i],0)} kgf`).join(' · ')}.</p></div>`;
+  }
+
+  html += `<div class="step"><h3>Geometria de cada perna (ângulo e comprimento)</h3>
+    <p>Com o gancho posicionado em planta sobre o CG (Xh=Xg, Yh=Yg) e cota Zh, cada perna forma um triângulo entre o ponto de içamento, sua projeção no plano do gancho e o próprio gancho:</p>
+    <div class="formula">distância horizontal = √[(Xi−Xg)² + (Yi−Yg)²]
+altura h = Zh − Zi
+comprimento do cabo L = √(horizontal² + h²)
+ângulo θ (a partir da vertical) = arctan(horizontal / h)</div>
+    <p>${rows.map(r=>`Perna ${r.i+1}: θ = ${fmt(r.angle,1)}°, L = ${fmt(r.L,2)} m`).join(' · ')}</p></div>`;
+
+  html += `<div class="step"><h3>Tração estática e tração dinâmica em cada perna</h3>
+    <p>A força vertical Fi calculada é a componente vertical da tração no cabo. A tração ao longo do próprio cabo é maior, pois o cabo está inclinado:</p>
+    <div class="formula">T estática = Fi / cos(θ)
+T dinâmica = T estática × ψ</div>
+    <p>${rows.map(r=>`Perna ${r.i+1}: T estática = ${fmt(r.Tstatic,0)} kgf → T dinâmica = ${fmt(r.Tdyn,0)} kgf`).join(' · ')}</p></div>`;
+
+  html += `<div class="step"><h3>Verificação de segurança</h3>
+    <div class="formula">Carga mínima de ruptura exigida (MBL) = T dinâmica × FS   (FS = ${FS}:1)</div>
+    <p>${rows.map(r=>`Perna ${r.i+1}: MBL exigida ≥ ${fmt(r.MBL,0)} kgf`).join(' · ')}</p>
+    ${WLL ? `<p>Como o WLL do acessório (${fmt(WLL,0)} kgf) já incorpora o fator de segurança do fabricante, a verificação direta é T dinâmica ≤ WLL: ${rows.map(r=>`perna ${r.i+1} ${r.Tdyn<=WLL ? 'atende' : 'NÃO atende'}`).join(', ')}.</p>` : `<p>Informe o WLL do cabo/cinta na Folha 04 para comparação direta com a tração dinâmica de cada perna.</p>`}</div>`;
+
+  stepsBlock.innerHTML = html;
+}
+
+renderPointRows();
+suggestPsi();
+recalc();
+</script>
+</body>
+</html>
