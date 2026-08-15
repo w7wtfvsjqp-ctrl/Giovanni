@@ -6,7 +6,6 @@
 <title>Plano de Içamento — Memória de Cálculo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root{
     --paper:#EFEAD8;
@@ -196,10 +195,17 @@
     font-size:11.5px;color:var(--ink-soft);border-top:1px solid var(--paper-line);
   }
 
+  @page{
+    size: A4;
+    margin: 14mm 12mm;
+  }
   @media print{
     body{background:#fff;}
+    .wrap{max-width:none;padding:0;}
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     .no-print{display:none !important;}
-    .sheet{box-shadow:none;break-inside:avoid;}
+    .sheet{box-shadow:none;}
+    .sheet, .step, tr, .callout{ break-inside: avoid; page-break-inside: avoid; }
   }
 </style>
 </head>
@@ -364,9 +370,9 @@
   </section>
 
   <div class="btn-row no-print" style="margin:18px 0 30px;">
-    <button class="primary" id="printBtn" type="button">Baixar PDF</button>
-    <span id="pdfStatus" style="font-size:12.5px;color:var(--ink-soft);align-self:center;"></span>
+    <button class="primary" id="printBtn" type="button">Salvar como PDF</button>
   </div>
+  <p class="no-print" style="font-size:12.5px;color:var(--ink-soft);margin-top:-14px;">Abre a caixa de impressão do navegador — escolha "Salvar como PDF" (ou "Imprimir → PDF") como destino/impressora.</p>
 
 </div>
 
@@ -375,44 +381,8 @@
 <script>
 document.getElementById('dateNow').textContent = new Date().toLocaleDateString('pt-BR');
 
-const printBtn = document.getElementById('printBtn');
-const pdfStatus = document.getElementById('pdfStatus');
-
-printBtn.addEventListener('click', ()=>{
-  if(typeof html2pdf === 'undefined'){
-    // biblioteca não carregou (ex: sem internet) — recorre ao diálogo de impressão do navegador
-    window.print();
-    return;
-  }
-  printBtn.disabled = true;
-  printBtn.textContent = 'Gerando PDF...';
-  pdfStatus.textContent = '';
-
-  const target = document.querySelector('.wrap');
-  const opt = {
-    margin: [10,8,10,8],
-    filename: 'plano-de-icamento.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#EFEAD8',
-      windowWidth: 920,
-      width: target.scrollWidth,
-      onclone: (doc) => { doc.querySelectorAll('.no-print').forEach(el => el.style.display = 'none'); }
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css'] }
-  };
-
-  html2pdf().set(opt).from(target).save()
-    .then(()=>{ pdfStatus.textContent = 'PDF baixado.'; })
-    .catch((err)=>{
-      console.error(err);
-      pdfStatus.textContent = 'Não foi possível gerar o PDF automaticamente — abrindo impressão.';
-      window.print();
-    })
-    .finally(()=>{ printBtn.disabled = false; printBtn.textContent = 'Baixar PDF'; });
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  window.print();
 });
 
 const G = 9.80665;
