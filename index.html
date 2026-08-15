@@ -174,6 +174,23 @@
   .refs{font-size:12px;color:var(--ink-soft);}
   .refs li{margin-bottom:6px;}
 
+  .sheet-desc{
+    font-size:12.5px;color:var(--ink-soft);
+    background:rgba(29,58,71,0.06);
+    border-left:3px solid var(--steel);
+    padding:8px 10px;margin:0 0 14px;
+  }
+
+  /* evita cortar itens pequenos ao meio de uma página, sem forçar folhas inteiras a caber numa página só */
+  tr, .step, .callout, .pts-row{
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .sheet-head{
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
   footer.legal{
     max-width:920px;margin:24px auto 0;padding:14px 16px;
     font-size:11.5px;color:var(--ink-soft);border-top:1px solid var(--paper-line);
@@ -199,6 +216,7 @@
   <section class="sheet">
     <div class="sheet-head"><span class="tag">FOLHA 01</span><h2>Dados da peça</h2></div>
     <div class="sheet-body">
+      <p class="sheet-desc">Informe o peso total da peça e as coordenadas do centro de gravidade (CG). Escolha livremente um ponto de origem (0,0,0) — pode ser um canto da peça, por exemplo — e use <strong>essa mesma origem</strong> para o CG e para os pontos de içamento da Folha 02, senão os cálculos ficam inconsistentes.</p>
       <div class="grid g2">
         <div>
           <label for="peso">Peso da peça (kgf)</label>
@@ -219,6 +237,7 @@
   <section class="sheet">
     <div class="sheet-head"><span class="tag">FOLHA 02</span><h2>Pontos de içamento</h2></div>
     <div class="sheet-body">
+      <p class="sheet-desc">Cadastre um ponto para cada olhal/cabeceira/cinta real da peça, com as coordenadas X, Y e Z medidas a partir da <strong>mesma origem</strong> usada no CG (Folha 01). A cota Z é a altura do próprio ponto de fixação na peça — pode ser diferente entre pontos se a peça tiver alturas de engate distintas.</p>
       <div class="grid" style="grid-template-columns: 34px repeat(3,1fr) 34px; margin-bottom:2px;">
         <div></div>
         <label>X (m)</label><label>Y (m)</label><label>Z / cota (m)</label>
@@ -236,6 +255,7 @@
   <section class="sheet">
     <div class="sheet-head"><span class="tag">FOLHA 03</span><h2>Aparelho de içamento</h2></div>
     <div class="sheet-body">
+      <p class="sheet-desc">Informe a cota (altura) em que ficará o gancho ou moitão durante o içamento, na mesma origem de referência das folhas anteriores — deve ser maior que a cota de todos os pontos de içamento. A velocidade de içamento é usada apenas para sugerir o coeficiente dinâmico (Folha 04).</p>
       <div class="grid g2">
         <div>
           <label for="zh">Cota do gancho / moitão (Z, m)</label>
@@ -254,6 +274,7 @@
   <section class="sheet">
     <div class="sheet-head"><span class="tag">FOLHA 04</span><h2>Coeficientes de projeto</h2></div>
     <div class="sheet-body">
+      <p class="sheet-desc">Os valores de ψ e FS já vêm sugeridos — ajuste apenas se seu equipamento tiver classificação própria na NBR 8400-1:2019. Preencha o WLL somente se já tiver o cabo/cinta definido, para o app conferir se ele suporta a tração calculada.</p>
       <div class="grid g2">
         <div>
           <label for="psi">Coeficiente dinâmico ψ</label>
@@ -286,6 +307,7 @@
   <section class="sheet">
     <div class="sheet-head"><span class="tag">DIAGRAMA</span><h2>Vista em planta</h2></div>
     <div class="sheet-body">
+      <p class="sheet-desc">Atualiza automaticamente conforme você edita os dados acima. As linhas em vermelho tracejado indicam pernas sem carga (cabo frouxo) — sinal de que a geometria do içamento precisa ser revista.</p>
       <svg id="diagram" viewBox="0 0 600 420"></svg>
       <div class="btn-row" style="margin-top:10px;">
         <span class="badge ok" style="opacity:.85;">● Ponto de içamento</span>
@@ -299,6 +321,7 @@
   <section class="sheet">
     <div class="sheet-head"><span class="tag">RESULTADO</span><h2>Tração por perna</h2></div>
     <div class="sheet-body" style="overflow-x:auto;">
+      <p class="sheet-desc" style="overflow-x:visible;">Tração de trabalho e verificação de segurança calculadas para cada perna. "MBL exigida" é a carga mínima de ruptura que o cabo/cinta precisa ter para atender o FS escolhido; se você informou o WLL na Folha 04, a coluna "Situação" já indica se ele atende.</p>
       <table id="resultsTable">
         <thead>
           <tr>
@@ -365,6 +388,7 @@ printBtn.addEventListener('click', ()=>{
   printBtn.textContent = 'Gerando PDF...';
   pdfStatus.textContent = '';
 
+  const target = document.querySelector('.wrap');
   const opt = {
     margin: [10,8,10,8],
     filename: 'plano-de-icamento.pdf',
@@ -373,13 +397,15 @@ printBtn.addEventListener('click', ()=>{
       scale: 2,
       useCORS: true,
       backgroundColor: '#EFEAD8',
+      windowWidth: 920,
+      width: target.scrollWidth,
       onclone: (doc) => { doc.querySelectorAll('.no-print').forEach(el => el.style.display = 'none'); }
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['.sheet', '.step'] }
+    pagebreak: { mode: ['css'] }
   };
 
-  html2pdf().set(opt).from(document.querySelector('.wrap')).save()
+  html2pdf().set(opt).from(target).save()
     .then(()=>{ pdfStatus.textContent = 'PDF baixado.'; })
     .catch((err)=>{
       console.error(err);
